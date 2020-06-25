@@ -1,0 +1,15 @@
+version: '3.5'
+
+services:
+  certs:
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    command: bash /setup/setup.sh
+    user: "0"
+    volumes:
+      - ./secrets:/secrets
+      - ./setup/:/setup/
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}

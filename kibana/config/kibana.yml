@@ -1,0 +1,11 @@
+---
+server.name: kibana
+server.host: "0.0.0.0"
+server.ssl.enabled: true
+server.ssl.certificate: /etc/kibana/instance.crt
+server.ssl.key: /etc/kibana/instance.key
+elasticsearch.ssl.verificationMode: none
+elasticsearch.hosts: [ "https://${ELASTICSEARCH_HOST_PORT}" ]
+elasticsearch.username: "elastic"
+elasticsearch.password: ${ELASTIC_PASSWORD}
+xpack.encryptedSavedObjects.encryptionKey: 'ggUZofkRd3REV6GeykMQBbtsynu4bV2uxLy'
