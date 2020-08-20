@@ -1,9 +1,9 @@
----
-node.name: logstash
-http.host: "0.0.0.0"
+http.host: "logstash"
+xpack.monitoring.elasticsearch.hosts: [ "https://elasticsearch:9200" ]
+path.config: ${CONFIG_DIR}/logstash.conf
+# X-Pack Security Options
 
 xpack.monitoring.enabled: true
-xpack.monitoring.elasticsearch.username: ${ELASTIC_USERNAME}
-xpack.monitoring.elasticsearch.password: ${ELASTIC_PASSWORD}
-xpack.monitoring.elasticsearch.hosts: [ "https://${ELASTICSEARCH_HOST_PORT}" ]
-xpack.monitoring.elasticsearch.ssl.certificate_authority: /etc/logstash/instance.crt
+xpack.monitoring.elasticsearch.username: "${ELASTIC_USERNAME}"
+xpack.monitoring.elasticsearch.password: "${ELASTIC_PASSWORD}"
+xpack.monitoring.elasticsearch.ssl.certificate_authority: ${CONFIG_DIR}/ca.crt

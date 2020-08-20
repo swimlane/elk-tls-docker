@@ -1,0 +1,21 @@
+instances:
+    - name: elasticsearch
+      dns:
+        - elasticsearch.fqdn.tld
+        - localhost
+        - elasticsearch
+        - 0.0.0.0
+      ip:
+        - 0.0.0.0
+    - name: kibana
+      dns:
+        - kibana
+        - localhost
+      ip:
+        - 0.0.0.0
+    - name: logstash
+      dns:
+        - logstash
+        - localhost
+      ip:
+        - 0.0.0.0

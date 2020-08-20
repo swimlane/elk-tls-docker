@@ -10,10 +10,10 @@ docker-compose -f docker-compose.setup.yml up -d
 
 ## Get CA Certificate
 
-Once those containers are running then we need to exec into the container:
+Once this container is running then we need to exec into the container:
 
 ```bash
-docker-compose exec keystore bash
+docker-compose exec certs bash
 ```
 
 Once in the container we then invoke the built-in executable in the bin directory to generate our CA certificate:

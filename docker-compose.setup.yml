@@ -2,14 +2,23 @@ version: '3.5'
 
 services:
   certs:
-    build:
-      context: elasticsearch/
-      args:
-        ELK_VERSION: ${ELK_VERSION}
-    command: bash /setup/setup.sh
+    container_name: certs
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
+    command: bash ${ELASTIC_DIR}/config/setup.sh
     user: "0"
     volumes:
-      - ./secrets:/secrets
-      - ./setup/:/setup/
-    environment:
+      - ./secrets:/secrets/
+      - ./setup/setup.sh:${ELASTIC_DIR}/config/setup.sh
+      - ./setup/instances.yml:${ELASTIC_DIR}/config/instances.yml:ro
+    environment: 
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+
+volumes:
+  secrets:
+    driver: local
+  setup:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge

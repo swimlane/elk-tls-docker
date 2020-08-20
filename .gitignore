@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+./secrets
 *.DS_Store
 
 # C extensions
