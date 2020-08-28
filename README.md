@@ -1,10 +1,12 @@
 # Setting up TLS ELK Stack
 
-This docker-compose project will assist with setting up and creating a ELK stack using generated TLS certificates for communications.  Basically, you get HTTPS for all services.  
+This docker-compose project will assist with setting up and creating a ELK stack using generated TLS certificates for communications.  In general you get HTTPS for all services.  
 
-> Currently we encrypt communications between services but I plan on adding TLS authentication as an option in the near future.
+> Please checkout our [WiKi](https://github.com/swimlane/elk-tls-docker/wiki) for detailed explanation of the project structure, configuration settings, and more.
 
-This project was built so that we could test and use built-in features undert Kibana SIEM, like detections, signals, cases, etc.
+## Environment Details
+
+This project was built so that you can test and use built-in features under Kibana SIEM, like detections, signals, cases, and other features.
 
 This docker-compose project will create the following Elastic containers based on version 7.8.1:
 
@@ -14,11 +16,11 @@ This docker-compose project will create the following Elastic containers based o
 * Packetbeat
 * Filebeat
 
-> Please checkout our [WiKi](https://github.com/swimlane/elk-tls-docker/wiki) for detailed explanation of the project structure, configuration settings, and more.
-
 ## Setup
 
-In order to use this project, you must first include the following in a [.env](.env) file:
+In order to use this project, you must first include the following in a file named `.env`. I have provided an example environment variable file here [.env-example](https://github.com/swimlane/elk-tls-docker/.env-example).
+
+> Copy or create your own `.env` from the provided example or from the code block below
 
 ```text
 ELK_VERSION=7.8.1
@@ -45,6 +47,8 @@ FILEBEAT_DIR=/usr/share/filebeat
 
 > Note: You may need to change the size of the HEAP variables in the above configuration file based on your system requirements.  The settings present are for a machine with 8GB of memory
 
+You can find more documentation about these settings in our [WiKi](https://github.com/swimlane/elk-tls-docker/wiki/Environment-Variables)
+
 ### Keystore
 
 Before we build or create our containers we first need to create our keystore and certificates.  You can do this using the [docker-compose.setup.yml](docker-compose.setup.yml) yaml file.  If you run into issues you can see the associated documentation in our [WiKi Page about Certificates](https://github.com/swimlane/elk-tls-docker/wiki/Certificates) or create an issue in this repository.
@@ -53,7 +57,7 @@ Before we build or create our containers we first need to create our keystore an
 docker-compose -f docker-compose.setup.yml run --rm certs
 ```
 
-Once you run this yaml file, you should have all necessary certificates/keys.  Next (recommended) you can set passwords for all accounts within ELK but this is optional and it it will use the default password defined in your `.env` file under the `ELASTIC_PASSWORD` value.
+Once you run this yaml file, you should have all necessary certificates/keys.  You can set passwords for all accounts within ELK but this is optional and it it will use the default password defined in your `.env` file under the `ELASTIC_PASSWORD` value.
 
 ### Setting Passwords (optional)
 
@@ -65,8 +69,6 @@ Let's run our ELK stack now:
 docker-compose up -d
 ```
 
-#### Set Passwords
-
 You will need to set passwords for all accounts.  I recommend in a tesitng environment to create a single password and use this across all accounts - it makes it easier when troublehshooting.
 
 We need to access the elasticsearch container and generate our passwords:
@@ -76,6 +78,8 @@ docker-compose exec elasticsearch bash
 > bin/elasticsearch-setup-passwords interactive -u "https://0.0.0.0:9200"
 # Set passwords for all accounts when prompted
 ```
+
+For more information about generating passwords and certificates, please see our documentation in our [WiKi](https://github.com/swimlane/elk-tls-docker/wiki/Certificates)
 
 ## Running ELK Stack
 
@@ -87,69 +91,23 @@ docker-compose up -d
 
 You should be able to login into the ELK stack and be on your way.
 
-Below is a map of common services and their IPs/Ports created by this docker-compose project:
+You can find additioanl information about the environments that are created on your [Environment Details](https://github.com/swimlane/elk-tls-docker/wiki/Environment-Details) WiKi page.
 
-|Service      |Protocol    | IP Address | Port(s)   |
-|-------------|------------|------------|-----------|
-|Elasticsearch|https       |0.0.0.0     |9200, 9300 |
-|Logstash     |udp         |0.0.0.0     |12201, 5000|
-|Logstash     |tcp         |0.0.0.0     |5000       |
-|Logstash     |http        |0.0.0.0     |5044, 9600 |
-|Kibana       |https       |0.0.0.0     |5601       |
-|Packetbeat   |http        |0.0.0.0     |Will capture local traffic|
-|Filebeat     |tcp         |0.0.0.0     |9000       |
+## Common Issues
 
-
-## Additional Notes
-
-This section provides some traditional situations that may arise and how to handle them:
-
-* When trying to access Kibana for the first time, it may take several minutes for you to receive a response.  If Kibana is working, you should see `server not up yet` when access the Kibana UI.  
-* Since we are generating self-signed certificates you may get a browser warning (especially Chrome) that the site is unsafe. If you select `continue` you may not be able to continue until you type `thisisunsafe` while the tab is selected.  There is not place to enter this information, you actually just type it in and it will trust this certificate for this browser session.  Please see this [great blog post here](https://medium.com/@dblazeski/chrome-bypass-net-err-cert-invalid-for-development-daefae43eb12).
+Please see our WiKi documentation for the most [Common Issues](https://github.com/swimlane/elk-tls-docker/wiki/Common-Issues) I have seen through testing and usage of this project.
 
 ## Enabling features
 
-This section talks about enabling features within Kibana and the Security stack.  In order to use all the features (mostly dashboards and reports) within Kibana SIEM you may have to modify your index mappings.
+This project provides a few (continually adding as needed & requested) helper scripts that assist with enabling specific features within Elastic Kibana SIEM featureset as well as adding test data to your Elasticsearch instance.
 
-### Create & Modify Index Mappings
+Please see our [Enabling Features](https://github.com/swimlane/elk-tls-docker/wiki/Enabling-Features) page in our [Wiki](https://github.com/swimlane/elk-tls-docker/wiki)
 
-As an example you can use the provided Python script [modify_index_mappings.py](bin/modify_index_mappings.py) to create a new (or modify an existing) elasticsearch index and modify its mappings to support features/UI components within the Elastic Kibana SIEM feature set.
+## Road Map
 
-### Loading pre-packaged rules
+Below are a list of features that are being planned for future releases:
 
-To access or load elastic's pre-packaged signals (detection rules) you can run the following after creating the default space above.
-
-```python
-import requests
-from requests.auth import HTTPBasicAuth
-
-_HOST = 'https://0.0.0.0:5601'
-_USERNAME = 'elastic'
-_PASSWORD = 'some_password'
-
-headers = {
-    'kbn-xsrf': 'elk-tls-docker',
-    'Content-Type': 'application/json'
-}
-
-ENDPOINT = '/api/detection_engine/rules/prepackaged'
-
-response = requests.put(
-    _HOST + ENDPOINT, 
-    headers=headers, 
-    auth=HTTPBasicAuth(_USERNAME, _PASSWORD), 
-    verify=False)
-print(response.json())
-```
-
-## Adding Data to Kibana
-
-Now we need to add some data.  You can do this the traditional way by just configuring all your systems to point to Logstash or Elasticsearch or Kibana or you can use a few shortcuts :)
-
-I am providing two different shortcuts.  The first is using a project I wrote called `soc-faker` and the other is sending data directly to the `filebeat` service. You can find them both below:
-
-* [Generate Fake Elasticsearch Documents using soc-faker](bin/send_document_to_elasticsearch.py)
-* [Send raw strings to filebeat using sockets](bin/send_data_to_filebeat.py)
+* Currently we encrypt communications between services but I plan on adding TLS authentication as an option in the near future.
 
 ## Built With
 
