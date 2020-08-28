@@ -14,6 +14,8 @@ This docker-compose project will create the following Elastic containers based o
 * Packetbeat
 * Filebeat
 
+> Please checkout our [WiKi](https://github.com/swimlane/elk-tls-docker/wiki) for detailed explanation of the project structure, configuration settings, and more.
+
 ## Setup
 
 In order to use this project, you must first include the following in a [.env](.env) file:
@@ -41,9 +43,11 @@ PACKETBEAT_DIR=/usr/share/packetbeat
 FILEBEAT_DIR=/usr/share/filebeat
 ```
 
+> Note: You may need to change the size of the HEAP variables in the above configuration file based on your system requirements.  The settings present are for a machine with 8GB of memory
+
 ### Keystore
 
-Before we build or create our containers we first need to create our keystore and certificates.  You can do this using the [docker-compose.setup.yml](docker-compose.setup.yml) yaml file.  If you run into issues you can see the associated documentation [CERTIFICATES.md](CERTIFICATES.md) or create an issue in this repository.
+Before we build or create our containers we first need to create our keystore and certificates.  You can do this using the [docker-compose.setup.yml](docker-compose.setup.yml) yaml file.  If you run into issues you can see the associated documentation in our [WiKi Page about Certificates](https://github.com/swimlane/elk-tls-docker/wiki/Certificates) or create an issue in this repository.
 
 ```bash
 docker-compose -f docker-compose.setup.yml run --rm certs
@@ -101,7 +105,7 @@ Below is a map of common services and their IPs/Ports created by this docker-com
 This section provides some traditional situations that may arise and how to handle them:
 
 * When trying to access Kibana for the first time, it may take several minutes for you to receive a response.  If Kibana is working, you should see `server not up yet` when access the Kibana UI.  
-* Since we are generating self-signed certificates you may get a browser warning (especially Chrome) that the site is unsafe. If you select `continue` you may not be able to until you type `thisisunsafe` while the tab is selected.  There is not place to enter this information, you actually just type it in and it will trust this certificate for this browser session.
+* Since we are generating self-signed certificates you may get a browser warning (especially Chrome) that the site is unsafe. If you select `continue` you may not be able to continue until you type `thisisunsafe` while the tab is selected.  There is not place to enter this information, you actually just type it in and it will trust this certificate for this browser session.  Please see this [great blog post here](https://medium.com/@dblazeski/chrome-bypass-net-err-cert-invalid-for-development-daefae43eb12).
 
 ## Enabling features
 

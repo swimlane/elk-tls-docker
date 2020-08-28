@@ -169,6 +169,7 @@ services:
       args:
         ELK_VERSION: $ELK_VERSION
     restart: unless-stopped
+    command: filebeat -e -strict.perms=false
     volumes:
       - ./filebeat/config/filebeat.yml:${FILEBEAT_DIR}/filebeat.yml:ro
     environment:
