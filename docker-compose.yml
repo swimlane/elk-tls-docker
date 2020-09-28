@@ -25,6 +25,10 @@ secrets:
     file: ./secrets/kibana/kibana.key
   kibana.cert:
     file: ./secrets/kibana/kibana.crt
+  filebeat.key:
+    file: ./secrets/filebeat/filebeat.key
+  filebeat.cert:
+    file: ./secrets/filebeat/filebeat.crt
 
 services:
   elasticsearch:
@@ -132,34 +136,34 @@ services:
     depends_on: 
       - elasticsearch
   
-  packetbeat:
-    container_name: packetbeat
-    hostname: packetbeat
-    user: root
-    build:
-      context: packetbeat/
-      args:
-        ELK_VERSION: $ELK_VERSION
-    restart: unless-stopped
-    cap_add: 
-      - NET_ADMIN
-      - NET_RAW
-    command: packetbeat -e -strict.perms=false
-    volumes:
-      - ./packetbeat/config/packetbeat.yml:${PACKETBEAT_DIR}/packetbeat.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      CONFIG_DIR: ${PACKETBEAT_DIR}/config
-      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
-      LS_JAVA_OPTS: "-Xmx${PACKETBEAT_HEAP} -Xms${PACKETBEAT_HEAP}"
-    secrets:
-      - source: ca.crt
-        target: ${PACKETBEAT_DIR}/config/ca.crt
-    networks:
-      - elk
-    depends_on: 
-      - logstash
+#  packetbeat:
+#    container_name: packetbeat
+#    hostname: packetbeat
+#    user: root
+#    build:
+#      context: packetbeat/
+#      args:
+#        ELK_VERSION: $ELK_VERSION
+#    restart: unless-stopped
+#    cap_add: 
+#      - NET_ADMIN
+#      - NET_RAW
+#    command: packetbeat -e -strict.perms=false
+#    volumes:
+#      - ./packetbeat/config/packetbeat.yml:${PACKETBEAT_DIR}/packetbeat.yml:ro
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    environment:
+#      CONFIG_DIR: ${PACKETBEAT_DIR}/config
+#      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+#      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+#      LS_JAVA_OPTS: "-Xmx${PACKETBEAT_HEAP} -Xms${PACKETBEAT_HEAP}"
+#    secrets:
+#      - source: ca.crt
+#        target: ${PACKETBEAT_DIR}/config/ca.crt
+#    networks:
+#      - elk
+#    depends_on: 
+#      - logstash
 
   filebeat:
     container_name: filebeat
@@ -175,6 +179,13 @@ services:
     environment:
       CONFIG_DIR: ${FILEBEAT_DIR}/config
       LS_JAVA_OPTS: "-Xmx${FILEBEAT_HEAP} -Xms${FILEBEAT_HEAP}"
+    secrets:
+      - source: ca.crt
+        target: ${FILEBEAT_DIR}/config/ca.crt
+      - source: filebeat.cert
+        target: ${FILEBEAT_DIR}/config/filebeat.crt
+      - source: filebeat.key
+        target: ${FILEBEAT_DIR}/config/filebeat.key
     ports:
       - "9000:9000" 
     networks:

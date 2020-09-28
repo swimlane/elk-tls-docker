@@ -11,11 +11,20 @@ instances:
       dns:
         - kibana
         - localhost
+        - 0.0.0.0
       ip:
         - 0.0.0.0
     - name: logstash
       dns:
         - logstash
         - localhost
+        - 0.0.0.0
+      ip:
+        - 0.0.0.0
+    - name: filebeat
+      dns:
+        - filebeat
+        - localhost
+        - 0.0.0.0
       ip:
         - 0.0.0.0

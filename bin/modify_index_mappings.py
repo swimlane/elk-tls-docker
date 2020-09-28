@@ -3,7 +3,7 @@ from requests.auth import HTTPBasicAuth
 
 
 _HOST = 'https://0.0.0.0:9200'
-_INDEX = 'winlogbeat'
+_INDEX = 'winlogbeat' # if it doesn't it exist it will be created
 _USERNAME = 'elastic'
 _PASSWORD = 'some_password'
 

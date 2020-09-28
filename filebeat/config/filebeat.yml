@@ -16,3 +16,6 @@ filebeat.inputs:
 
 output.logstash:
     hosts: ["logstash:5044"]
+   # ssl.certificate_authorities: ["${CONFIG_DIR}/ca.crt"]
+    #ssl.certificate: "${CONFIG_DIR}/filebeat.crt"
+    #ssl.key: "${CONFIG_DIR}/filebeat.key"
