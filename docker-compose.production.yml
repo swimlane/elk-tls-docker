@@ -45,8 +45,9 @@ services:
       - VALIDATION=http
       - EMAIL=${EMAIL}
       - STAGING=false
+      - MYSUBDOMAIN=${SUBDOMAIN}
     volumes:
-      - ./swag/kibana.subdomain.conf:/config/nginx/proxy-confs/kibana.subdomain.conf
+      - ./swag/nginx/proxy-confs/kibana.subdomain.conf:/config/nginx/proxy-confs/${SUBDOMAIN}.subdomain.conf
       - ./swag:/config
     ports:
       - 443:443

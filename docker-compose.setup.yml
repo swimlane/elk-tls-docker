@@ -7,11 +7,14 @@ services:
     command: bash ${ELASTIC_DIR}/config/setup.sh
     user: "0"
     volumes:
+      - ./swag:/swag/
       - ./secrets:/secrets/
       - ./setup/setup.sh:${ELASTIC_DIR}/config/setup.sh
       - ./setup/instances.yml:${ELASTIC_DIR}/config/instances.yml:ro
     environment: 
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    networks: 
+      - elk
 
 volumes:
   secrets:
@@ -20,5 +23,5 @@ volumes:
     driver: local
 
 networks:
-  elastic:
+  elk:
     driver: bridge
