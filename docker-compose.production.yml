@@ -58,7 +58,7 @@ services:
         target: ${ELASTIC_DIR}/config/elasticsearch.crt
       - source: elasticsearch.key
         target: ${ELASTIC_DIR}/config/elasticsearch.key
-    ports:
+    expose:
       - "9200:9200"
       - "9300:9300"
     ulimits:
@@ -98,7 +98,7 @@ services:
         target: ${LOGSTASH_DIR}/config/logstash.pkcs8.key
     networks:
       - elk
-    ports:
+    expose:
      - "12201:12201/udp"
      - "5044:5044"
      - "9600:9600"
@@ -129,7 +129,7 @@ services:
         target: ${KIBANA_DIR}/config/kibana.crt
       - source: kibana.key
         target: ${KIBANA_DIR}/config/kibana.key
-    ports:
+    expose:
       - "5601:5601"
     networks:
       - elk
@@ -186,7 +186,7 @@ services:
         target: ${FILEBEAT_DIR}/config/filebeat.crt
       - source: filebeat.key
         target: ${FILEBEAT_DIR}/config/filebeat.key
-    ports:
+    expose:
       - "9000:9000" 
     networks:
       - elk

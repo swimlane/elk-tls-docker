@@ -14,7 +14,7 @@ elasticsearch-keystore create >> /dev/null
 # Setting Secrets
 
 ## Setting Bootstrap Password
-echo "Setting bootstrap.password..."
+echo "Setting bootstrap password..."
 (echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -x 'bootstrap.password')
 
 
@@ -76,13 +76,21 @@ if [ -d "$OUTPUT_DIR/logstash" ]; then
     rm -rf "$OUTPUT_DIR/logstash"
 fi
 
-echo "Generating Certificate Authority"
-bin/elasticsearch-certutil ca -s --pass "" --pem --out $CA_ZIP
-unzip $CA_ZIP -d $OUTPUT_DIR
-
+if [ "$STAGING"]; then
+    echo "Generating Certificate Authority"
+    bin/elasticsearch-certutil ca -s --pass "" --pem --out $CA_ZIP
+    unzip $CA_ZIP -d $OUTPUT_DIR
+else
+    echo "Using letsencrypt certificate authority"
+    CA_CERT="/swag/keys/cert.crt"
+    mkdir $OUTPUT_DIR/ca
+    cp $CA_CERT $OUTPUT_DIR/ca/ca.crt
+    CA_KEY="/swag/keys/cert.key"
+    cp $CA_KEY $OUTPUT_DIR/ca/ca.key
+fi
 
 echo "Generating a certificate and private keys"
-bin/elasticsearch-certutil cert -s --ca-cert $OUTPUT_DIR/ca/ca.crt --ca-key $OUTPUT_DIR/ca/ca.key --ca-pass "" --pem --in $CONFIG_DIR/instances.yml --out $BUNDLE_ZIP
+bin/elasticsearch-certutil cert -s --ca-cert $CA_CERT --ca-key $CA_KEY --ca-pass "" --pem --in $CONFIG_DIR/instances.yml --out $BUNDLE_ZIP
 unzip $BUNDLE_ZIP -d $OUTPUT_DIR
 
 echo "Convert logstash.key to PKCS#8 format for Beats input plugin"
@@ -90,30 +98,6 @@ openssl pkcs8 -in $OUTPUT_DIR/logstash/logstash.key -topk8 -nocrypt -out $OUTPUT
 
 chown -R 1000:0 $OUTPUT_DIR
 
-#echo "Generating certificates for encrypting HTTP client communications"
-#echo "Follow the prompts and provide the generated CA from above."
-#echo "This CA is located: /secrets/elastic-stack-ca.p12"
-#elasticsearch-certutil http
-
-#chmod 0644 "/secrets/elasticsearch-ssl-http.zip"
-#unzip "/secrets/elasticsearch-ssl-http.zip"
-#mv "/secrets/elasticsearch/http.p12" "/secrets/elasticsearch_http.p12"
-#mv "/secrets/kibana/elasticsearch-ca.pem" "/secrets/elasticsearch_kibana_ca.pem"
-
-#elasticsearch-certutil cert --pem -ca $CA_FILE --ca-pass "" --out $ZIP_FILE
-#unzip $ZIP_FILE
-#mv "instance/instance.crt" $CRT_FILE
-#mv "instance/instance.key" $KEY_FILE
-#rm $ZIP_FILE
-
-
-#chmod 0644 $CRT_FILE
-#chmod 0644 $KEY_FILE
-
-#openssl pkcs12 -in $CERT_FILE -out $PEM_FILE -clcerts -nokeys -passin pass:""
-#chmod 0644 $PEM_FILE
-#printf "Certificate Authority created at $CA_FILE\n"
-#printf "Certificate created at $CERT_FILE\n"
-#printf "=====================================================\n"
-#printf "SSL Certifications generation completed successfully.\n"
-#printf "=====================================================\n"
+printf "=====================================================\n"
+printf "SSL Certifications generation completed successfully.\n"
+printf "=====================================================\n"

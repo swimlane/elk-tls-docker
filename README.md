@@ -1,6 +1,6 @@
 # Setting up TLS ELK Stack
 
-This docker-compose project will assist with setting up and creating a ELK stack using generated TLS certificates for communications.  In general you get HTTPS for all services.  
+This docker-compose project will assist with setting up and creating a ELK stack using either self-signed TLS certificates or using LetsEncrypt certificates for communications.  In general you get HTTPS for all services.
 
 > Please checkout our [WiKi](https://github.com/swimlane/elk-tls-docker/wiki) for detailed explanation of the project structure, configuration settings, and more.
 
@@ -42,6 +42,18 @@ LOGSTASH_DIR=/usr/share/logstash
 KIBANA_DIR=/usr/share/kibana
 PACKETBEAT_DIR=/usr/share/packetbeat
 FILEBEAT_DIR=/usr/share/filebeat
+
+# Letsencrypt certificates
+## Setting STAGING to true means it will generate self-signed certificates
+## Setting STAGING to false means it will generate letsencrypt certificates
+# STAGING=false
+STAGING=true
+
+# swag Configuration
+DOMAIN=mydomain.com
+SUBDOMAIN=kibana
+EMAIL=email@email.com
+TIMEZONE=America/Chicago
 ```
 
 > Note: You may need to change the size of the HEAP variables in the above configuration file based on your system requirements.  The settings present are for a machine with 8GB of memory
@@ -54,40 +66,40 @@ You can find more documentation about these settings in our [WiKi](https://githu
 
 Before we build or create our containers we first need to create our keystore and certificates.  You can do this using the [docker-compose.setup.yml](docker-compose.setup.yml) yaml file.  If you run into issues you can see the associated documentation in our [WiKi Page about Certificates](https://github.com/swimlane/elk-tls-docker/wiki/Certificates) or create an issue in this repository.
 
+
+#### Creating Keystore for self-signed certificates
+
+By default creation of self-signed certificates is used and makes the most sense when testing out this project.  To do so you simply run the following command first:
+
 ```bash
 docker-compose -f docker-compose.setup.yml run --rm certs
 ```
 
-Once you run this yaml file, you should have all necessary certificates/keys.  You can set passwords for all accounts within ELK but this is optional and it it will use the default password defined in your `.env` file under the `ELASTIC_PASSWORD` value.
+Please see our documentation about [Setup using self-signed certificates](https://github.com/swimlane/elk-tls-docker/wiki/Setup%20using%20self-signed%20certificates).
 
-### Setting Passwords (optional)
+#### Creating Keystore & Certificates for production
 
-The first thing you will is set passwords for all accounts within ELK.
+If you are wanting to deploy this project in a production like environment, please see our documentation [Setup using Letsencrypt](https://github.com/swimlane/elk-tls-docker/wiki/Setup%20using%20Letsencrypt).
 
-Let's run our ELK stack now:
 
-```
-docker-compose up -d
-```
+## Running a development environment
 
-You will need to set passwords for all accounts.  I recommend in a tesitng environment to create a single password and use this across all accounts - it makes it easier when troublehshooting.
-
-We need to access the elasticsearch container and generate our passwords:
-
-```
-docker-compose exec elasticsearch bash
-> bin/elasticsearch-setup-passwords interactive -u "https://0.0.0.0:9200"
-# Set passwords for all accounts when prompted
-```
-
-For more information about generating passwords and certificates, please see our documentation in our [WiKi](https://github.com/swimlane/elk-tls-docker/wiki/Certificates)
-
-## Running ELK Stack
-
-Now, that you have your keys/certs and passwords set we can then just restart the containers by running:
+Now, that you have your keys/certs and [passwords](https://github.com/swimlane/elk-tls-docker/wiki/Setting%20Passwords) set we can then just restart the containers by running:
 
 ```
 docker-compose up -d
+```
+
+You should be able to login into the ELK stack and be on your way.
+
+You can find additioanl information about the environments that are created on your [Environment Details](https://github.com/swimlane/elk-tls-docker/wiki/Environment-Details) WiKi page.
+
+## Running a production environment
+
+Now, that you have your keys/certs and [passwords](https://github.com/swimlane/elk-tls-docker/wiki/Setting%20Passwords) set we can then just restart the containers by running:
+
+```
+docker-compose -f docker-compose.production.yml -f docker-compose.override.yml up -d
 ```
 
 You should be able to login into the ELK stack and be on your way.
@@ -108,11 +120,8 @@ Please see our [Enabling Features](https://github.com/swimlane/elk-tls-docker/wi
 
 Below are a list of features that are being planned for future releases:
 
-* Currently we encrypt communications between services but I plan on adding TLS authentication as an option in the near future.
-
-## Built With
-
-* [carcass](https://github.com/MSAdministrator/carcass) - Python packaging template
+* Adding additional services from Elastic
+* Adding certificate authentication for external usage
 
 ## Contributing
 
