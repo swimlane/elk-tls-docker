@@ -31,6 +31,33 @@ secrets:
     file: ./secrets/filebeat/filebeat.crt
 
 services:
+  swag:
+    image: linuxserver/swag
+    container_name: swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=2000
+      - PGID=2000
+      - TZ=${TIMEZONE}
+      - URL=${DOMAIN}
+      - SUBDOMAINS=${SUBDOMAIN}
+      - VALIDATION=http
+      - EMAIL=${EMAIL}
+      - STAGING=false
+    volumes:
+      - ./swag/kibana.subdomain.conf:/config/nginx/proxy-confs/kibana.subdomain.conf
+      - ./swag:/config
+    ports:
+      - 443:443
+      - 80:80
+    restart: unless-stopped
+    networks:
+      - elk
+    depends_on: 
+      - elasticsearch
+      - kibana
+
   elasticsearch:
     container_name: elasticsearch
     hostname: elasticsearch
@@ -59,8 +86,8 @@ services:
       - source: elasticsearch.key
         target: ${ELASTIC_DIR}/config/elasticsearch.key
     expose:
-      - "9200:9200"
-      - "9300:9300"
+      - 9200
+      - 9300
     ulimits:
       memlock:
         soft: -1
@@ -70,6 +97,35 @@ services:
         hard: 200000
     networks:
       - elk
+
+  kibana:
+    container_name: kibana
+    hostname: kibana
+    build:
+      context: kibana/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    restart: unless-stopped
+    volumes:
+      - ./kibana/config/kibana.yml:${KIBANA_DIR}/config/kibana.yml:ro
+    environment:
+      CONFIG_DIR: ${KIBANA_DIR}/config
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      ENCRYPTION_KEY: ${XPACK_ENCRYPTION_KEY}
+    secrets:
+      - source: ca.crt
+        target: ${KIBANA_DIR}/config/ca.crt
+      - source: kibana.cert
+        target: ${KIBANA_DIR}/config/kibana.crt
+      - source: kibana.key
+        target: ${KIBANA_DIR}/config/kibana.key
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    depends_on: 
+      - elasticsearch
 
   logstash:
     container_name: logstash
@@ -99,40 +155,11 @@ services:
     networks:
       - elk
     expose:
-     - "12201:12201/udp"
-     - "5044:5044"
-     - "9600:9600"
-     - "5000:5000/tcp"
-     - "5000:5000/udp"
-    depends_on: 
-      - elasticsearch
-
-  kibana:
-    container_name: kibana
-    hostname: kibana
-    build:
-      context: kibana/
-      args:
-        ELK_VERSION: $ELK_VERSION
-    restart: unless-stopped
-    volumes:
-      - ./kibana/config/kibana.yml:${KIBANA_DIR}/config/kibana.yml:ro
-    environment:
-      CONFIG_DIR: ${KIBANA_DIR}/config
-      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
-      ENCRYPTION_KEY: ${XPACK_ENCRYPTION_KEY}
-    secrets:
-      - source: ca.crt
-        target: ${KIBANA_DIR}/config/ca.crt
-      - source: kibana.cert
-        target: ${KIBANA_DIR}/config/kibana.crt
-      - source: kibana.key
-        target: ${KIBANA_DIR}/config/kibana.key
-    expose:
-      - "5601:5601"
-    networks:
-      - elk
+     - 12201/udp
+     - 5044
+     - 9600
+     - 5000/tcp
+     - 5000/udp
     depends_on: 
       - elasticsearch
   
@@ -187,7 +214,7 @@ services:
       - source: filebeat.key
         target: ${FILEBEAT_DIR}/config/filebeat.key
     expose:
-      - "9000:9000" 
+      - 9000
     networks:
       - elk
     depends_on: 

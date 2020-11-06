@@ -71,6 +71,35 @@ services:
     networks:
       - elk
 
+  kibana:
+    container_name: kibana
+    hostname: kibana
+    build:
+      context: kibana/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    restart: unless-stopped
+    volumes:
+      - ./kibana/config/kibana.yml:${KIBANA_DIR}/config/kibana.yml:ro
+    environment:
+      CONFIG_DIR: ${KIBANA_DIR}/config
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      ENCRYPTION_KEY: ${XPACK_ENCRYPTION_KEY}
+    secrets:
+      - source: ca.crt
+        target: ${KIBANA_DIR}/config/ca.crt
+      - source: kibana.cert
+        target: ${KIBANA_DIR}/config/kibana.crt
+      - source: kibana.key
+        target: ${KIBANA_DIR}/config/kibana.key
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    depends_on: 
+      - elasticsearch
+
   logstash:
     container_name: logstash
     hostname: logstash
@@ -104,35 +133,6 @@ services:
      - "9600:9600"
      - "5000:5000/tcp"
      - "5000:5000/udp"
-    depends_on: 
-      - elasticsearch
-
-  kibana:
-    container_name: kibana
-    hostname: kibana
-    build:
-      context: kibana/
-      args:
-        ELK_VERSION: $ELK_VERSION
-    restart: unless-stopped
-    volumes:
-      - ./kibana/config/kibana.yml:${KIBANA_DIR}/config/kibana.yml:ro
-    environment:
-      CONFIG_DIR: ${KIBANA_DIR}/config
-      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
-      ENCRYPTION_KEY: ${XPACK_ENCRYPTION_KEY}
-    secrets:
-      - source: ca.crt
-        target: ${KIBANA_DIR}/config/ca.crt
-      - source: kibana.cert
-        target: ${KIBANA_DIR}/config/kibana.crt
-      - source: kibana.key
-        target: ${KIBANA_DIR}/config/kibana.key
-    ports:
-      - "5601:5601"
-    networks:
-      - elk
     depends_on: 
       - elasticsearch
   
