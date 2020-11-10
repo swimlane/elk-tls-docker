@@ -13,6 +13,8 @@ services:
       - ./setup/instances.yml:${ELASTIC_DIR}/config/instances.yml:ro
     environment: 
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      SUBDOMAIN: ${SUBDOMAIN}
+      SUBFOLDER: ${SUBFOLDER}
     networks: 
       - elk
 

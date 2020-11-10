@@ -89,6 +89,19 @@ create_self_signed_ca()
     unzip $CA_ZIP -d $OUTPUT_DIR
 }
 
+rename_swag_confs()
+{
+    if [ "$SUBDOMAIN" ]; then
+        mv "/swag/nginx/proxy-confs/kibana.subdomain.conf.sample" "/swag/nginx/proxy-confs/$SUBDOMAIN.subdomain.conf"
+        sed -i -e "s/REPLACE_ME.*;/$SUBDOMAIN.*;/" "/swag/nginx/proxy-confs/$SUBDOMAIN.subdomain.conf"
+    elif [ "$SUBFOLDER" ]; then
+        mv "/swag/nginx/proxy-confs/kibana.subfolder.conf.sample" "/swag/nginx/proxy-confs/$SUBFOLDER.subfolder.conf"
+        sed -e "s/\\REPLACE_ME/\\$SUBFOLDER/" "/swag/nginx/proxy-confs/$SUBFOLDER.subfolder.conf"
+    else
+        echo "No SUBDOMAIN or SUBFOLDER variable set.... skipping ...."
+    fi
+}
+
 if [ "$STAGING"]; then
     create_keystore
     remove_existing_certificates
@@ -112,6 +125,7 @@ else
         touch "$OUTPUT_DIR/.temp"
         echo "Creating temporary ca for initial setup"
         create_self_signed_ca
+        rename_swag_confs
     fi
 fi
 

@@ -6,7 +6,7 @@ This docker-compose project will assist with setting up and creating a ELK stack
 
 ## Environment Details
 
-This project was built so that you can test and use built-in features under Kibana SIEM, like detections, signals, cases, and other features.
+This project was built so that you can test and use built-in features under Elastic Security, like detections, signals, cases, and other features.
 
 This docker-compose project will create the following Elastic containers based on version 7.9.2:
 
@@ -52,6 +52,7 @@ STAGING=true
 # swag Configuration
 DOMAIN=mydomain.com
 SUBDOMAIN=kibana
+#SUBFOLDER=kibana
 EMAIL=email@email.com
 TIMEZONE=America/Chicago
 ```
@@ -65,7 +66,6 @@ You can find more documentation about these settings in our [WiKi](https://githu
 ### Keystore
 
 Before we build or create our containers we first need to create our keystore and certificates.  You can do this using the [docker-compose.setup.yml](docker-compose.setup.yml) yaml file.  If you run into issues you can see the associated documentation in our [WiKi Page about Certificates](https://github.com/swimlane/elk-tls-docker/wiki/Certificates) or create an issue in this repository.
-
 
 #### Creating Keystore for self-signed certificates
 
@@ -96,11 +96,7 @@ You can find additioanl information about the environments that are created on y
 
 ## Running a production environment
 
-Now, that you have your keys/certs and [passwords](https://github.com/swimlane/elk-tls-docker/wiki/Setting%20Passwords) set we can then just restart the containers by running:
-
-```
-docker-compose -f docker-compose.production.yml -f docker-compose.override.yml up -d
-```
+Here is a [walkthrough](https://github.com/swimlane/elk-tls-docker/wiki/Letsencrypt%20Walkthrough) on setting up a production-like environment using LetsEncrypt.
 
 You should be able to login into the ELK stack and be on your way.
 
