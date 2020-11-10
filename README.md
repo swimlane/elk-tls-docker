@@ -1,4 +1,6 @@
-# Setting up TLS ELK Stack
+# elk-tls-docker
+
+![](https://raw.githubusercontent.com/wiki/swimlane/elk-tls-docker/images/elk-tls-docker-diagram.png)
 
 This docker-compose project will assist with setting up and creating a ELK stack using either self-signed TLS certificates or using LetsEncrypt certificates for communications.  In general you get HTTPS for all services.
 
@@ -15,6 +17,7 @@ This docker-compose project will create the following Elastic containers based o
 * Kibana
 * Packetbeat
 * Filebeat
+
 
 ## Setup
 
