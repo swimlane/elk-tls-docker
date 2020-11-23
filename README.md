@@ -53,10 +53,10 @@ FILEBEAT_DIR=/usr/share/filebeat
 STAGING=true
 
 # swag Configuration
-DOMAIN=mydomain.com
+DOMAIN=company.us
 SUBDOMAIN=kibana
 #SUBFOLDER=kibana
-EMAIL=email@email.com
+EMAIL=email@company.us
 TIMEZONE=America/Chicago
 ```
 
