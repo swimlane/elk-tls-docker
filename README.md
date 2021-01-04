@@ -21,7 +21,7 @@ This docker-compose project will create the following Elastic containers based o
 
 ## Setup
 
-In order to use this project, you must first include the following in a file named `.env`. I have provided an example environment variable file here [.env-example](https://github.com/swimlane/elk-tls-docker/.env-example).
+In order to use this project, you must first include the following in a file named `.env`. I have provided an example environment variable file here [.env-example](https://github.com/swimlane/elk-tls-docker/blob/master/.env-example).
 
 > Copy or create your own `.env` from the provided example or from the code block below
 
