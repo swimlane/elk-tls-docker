@@ -1,6 +1,6 @@
 ## Cluster Settings
 cluster.name: "docker-cluster"
-network.host: 0.0.0.0
+network.host: "elasticsearch"
 
 ## License
 xpack.license.self_generated.type: trial
