@@ -15,6 +15,7 @@ services:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       SUBDOMAIN: ${SUBDOMAIN}
       SUBFOLDER: ${SUBFOLDER}
+      STAGING: ${STAGING}
     networks: 
       - elk
 
