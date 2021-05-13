@@ -119,9 +119,11 @@ services:
         ELK_VERSION: $ELK_VERSION
     restart: unless-stopped
     volumes:
-      - ./logstash/config/logstash.yml:${LOGSTASH_DIR}/config/logstash.yml:ro
-      - ./logstash/pipeline/logstash.conf:${LOGSTASH_DIR}/config/logstash.conf:ro
+      - ./logstash/config/logstash.yml:${LOGSTASH_DIR}/config/logstash.yml
+      - ./logstash/pipeline/logstash.conf:${LOGSTASH_DIR}/pipeline/logstash.conf
+      - ./logstash/pipeline/metricbeat.conf:${LOGSTASH_DIR}/pipeline/metricbeat.conf
     environment:
+      path.settings: null
       CONFIG_DIR: ${LOGSTASH_DIR}/config
       ELASTIC_USERNAME: ${ELASTIC_USERNAME}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
@@ -131,20 +133,25 @@ services:
         target: ${LOGSTASH_DIR}/config/ca.crt
       - source: logstash.cert
         target: ${LOGSTASH_DIR}/config/logstash.crt
+      - source: logstash.pkcs8.key
+        target: ${LOGSTASH_DIR}/config/logstash.pkcs8.key
       - source: logstash.key
         target: ${LOGSTASH_DIR}/config/logstash.key
-      - source: logstash.pkcs8
-        target: ${LOGSTASH_DIR}/config/logstash.pkcs8.key
+      - source: logstash.p12
+        target: ${LOGSTASH_DIR}/config/logstash.p12
     networks:
       - elk
     ports:
-     - "12201:12201/udp"
-     - "5044:5044"
-     - "9600:9600"
-     - "5000:5000/tcp"
-     - "5000:5000/udp"
+    - "12201:12201/udp"
+    - "5044:5044"
+    - "5045:5045/tcp"
+    - "5046:5046"
+    - "9600:9600"
+    - "5000:5000/tcp"
+    - "5000:5000/udp"
     depends_on: 
       - elasticsearch
+      - kibana
   
   packetbeat:
     container_name: packetbeat
