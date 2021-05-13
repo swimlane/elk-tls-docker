@@ -5,30 +5,40 @@ volumes:
   data:
 
 secrets:
+  ca.crt:
+    file: ./secrets/certificate_authority/ca/ca.crt
   elasticsearch.keystore:
     file: ./secrets/elasticsearch.keystore
-  ca.crt:
-    file: ./secrets/ca/ca.crt
-  ca.key:
-    file: ./secrets/ca/ca.key
+  elastic-stack-ca.p12:
+    file: ./secrets/certificate_authority/elastic-stack-ca.p12
   elasticsearch.key:
-    file: ./secrets/elasticsearch/elasticsearch.key
+    file: ./secrets/certificates/elasticsearch/elasticsearch.key
   elasticsearch.cert:
-    file: ./secrets/elasticsearch/elasticsearch.crt
-  logstash.key:
-    file: ./secrets/logstash/logstash.key
-  logstash.pkcs8:
-    file: ./secrets/logstash/logstash.pkcs8.key
-  logstash.cert:
-    file: ./secrets/logstash/logstash.crt
+    file: ./secrets/certificates/elasticsearch/elasticsearch.crt
   kibana.key:
-    file: ./secrets/kibana/kibana.key
+    file: ./secrets/certificates/kibana/kibana.key
   kibana.cert:
-    file: ./secrets/kibana/kibana.crt
+    file: ./secrets/certificates/kibana/kibana.crt
+  logstash.pkcs8.key:
+    file: ./secrets/certificates/logstash/logstash.pkcs8.key
+  logstash.key:
+    file: ./secrets/certificates/logstash/logstash.key
+  logstash.p12:
+    file: ./secrets/keystores/logstash/logstash.p12
+  logstash.cert:
+    file: ./secrets/certificates/logstash/logstash.crt
   filebeat.key:
-    file: ./secrets/filebeat/filebeat.key
+    file: ./secrets/certificates/filebeat/filebeat.key
   filebeat.cert:
-    file: ./secrets/filebeat/filebeat.crt
+    file: ./secrets/certificates/filebeat/filebeat.crt
+  metricbeat.key:
+    file: ./secrets/certificates/metricbeat/metricbeat.key
+  metricbeat.cert:
+    file: ./secrets/certificates/metricbeat/metricbeat.crt
+  packetbeat.key:
+    file: ./secrets/certificates/packetbeat/packetbeat.key
+  packetbeat.cert:
+    file: ./secrets/certificates/packetbeat/packetbeat.crt
 
 services:
   elasticsearch:
@@ -109,9 +119,11 @@ services:
         ELK_VERSION: $ELK_VERSION
     restart: unless-stopped
     volumes:
-      - ./logstash/config/logstash.yml:${LOGSTASH_DIR}/config/logstash.yml:ro
-      - ./logstash/pipeline/logstash.conf:${LOGSTASH_DIR}/config/logstash.conf:ro
+      - ./logstash/config/logstash.yml:${LOGSTASH_DIR}/config/logstash.yml
+      - ./logstash/pipeline/logstash.conf:${LOGSTASH_DIR}/pipeline/logstash.conf
+      - ./logstash/pipeline/metricbeat.conf:${LOGSTASH_DIR}/pipeline/metricbeat.conf
     environment:
+      path.settings: null
       CONFIG_DIR: ${LOGSTASH_DIR}/config
       ELASTIC_USERNAME: ${ELASTIC_USERNAME}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
@@ -121,20 +133,25 @@ services:
         target: ${LOGSTASH_DIR}/config/ca.crt
       - source: logstash.cert
         target: ${LOGSTASH_DIR}/config/logstash.crt
+      - source: logstash.pkcs8.key
+        target: ${LOGSTASH_DIR}/config/logstash.pkcs8.key
       - source: logstash.key
         target: ${LOGSTASH_DIR}/config/logstash.key
-      - source: logstash.pkcs8
-        target: ${LOGSTASH_DIR}/config/logstash.pkcs8.key
+      - source: logstash.p12
+        target: ${LOGSTASH_DIR}/config/logstash.p12
     networks:
       - elk
     ports:
-     - "12201:12201/udp"
-     - "5044:5044"
-     - "9600:9600"
-     - "5000:5000/tcp"
-     - "5000:5000/udp"
+    - "12201:12201/udp"
+    - "5044:5044"
+    - "5045:5045/tcp"
+    - "5046:5046"
+    - "9600:9600"
+    - "5000:5000/tcp"
+    - "5000:5000/udp"
     depends_on: 
       - elasticsearch
+      - kibana
   
   packetbeat:
     container_name: packetbeat
@@ -158,8 +175,50 @@ services:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       LS_JAVA_OPTS: "-Xmx${PACKETBEAT_HEAP} -Xms${PACKETBEAT_HEAP}"
     secrets:
+    - source: ca.crt
+      target: /etc/pki/ca-trust/source/anchors/ca.crt
+    - source: packetbeat.cert
+      target: ${PACKETBEAT_DIR}/config/packetbeat.crt
+    - source: packetbeat.key
+      target: ${PACKETBEAT_DIR}/config/packetbeat.key
+    networks:
+      - elk
+    depends_on: 
+      - logstash
+
+  metricbeat:
+    container_name: metricbeat
+    hostname: metricbeat
+    user: root
+    build:
+      context: metricbeat/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    restart: unless-stopped
+    cap_add: 
+      - NET_ADMIN
+      - NET_RAW
+    command:
+      - /bin/bash
+      - -c
+      - while true; do metricbeat -e; sleep 1; done
+    volumes:
+      - ./metricbeat/config/metricbeat.yml:${METRICBEAT_DIR}/metricbeat.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      CONFIG_DIR: ${METRICBEAT_DIR}/config
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      LS_JAVA_OPTS: "-Xmx${METRICBEAT_HEAP} -Xms${METRICBEAT_HEAP}"
+    secrets:
+      - source: elastic-stack-ca.p12
+        target: /etc/pki/ca-trust/source/anchors/elastic-stack-ca.p12
       - source: ca.crt
-        target: ${PACKETBEAT_DIR}/config/ca.crt
+        target: /etc/pki/ca-trust/source/anchors/ca.crt
+      - source: metricbeat.cert
+        target: ${METRICBEAT_DIR}/config/metricbeat.crt
+      - source: metricbeat.key
+        target: ${METRICBEAT_DIR}/config/metricbeat.key
     networks:
       - elk
     depends_on: 
@@ -173,12 +232,15 @@ services:
       args:
         ELK_VERSION: $ELK_VERSION
     restart: unless-stopped
-    command: filebeat -e -strict.perms=false
-    volumes:
+    command: >
+      sh -c "filebeat -e"
+    volumes: 
       - ./filebeat/config/filebeat.yml:${FILEBEAT_DIR}/filebeat.yml:ro
     environment:
       CONFIG_DIR: ${FILEBEAT_DIR}/config
       LS_JAVA_OPTS: "-Xmx${FILEBEAT_HEAP} -Xms${FILEBEAT_HEAP}"
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
     secrets:
       - source: ca.crt
         target: ${FILEBEAT_DIR}/config/ca.crt
@@ -188,6 +250,34 @@ services:
         target: ${FILEBEAT_DIR}/config/filebeat.key
     ports:
       - "9000:9000" 
+    networks:
+      - elk
+    depends_on: 
+      - logstash
+
+  elastic-agent:
+    container_name: elastic-agent
+    hostname: elastic-agent
+    build:
+      context: elastic-agent/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    restart: unless-stopped
+    environment:
+      FLEET_CA: '/ca.crt'
+      ELK_VERSION: ${ELK_VERSION}
+      KIBANA_HOST: "https://kibana:5601"
+      ELASTICSEARCH_USERNAME: ${ELASTIC_USERNAME}
+      ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD}
+      ELASTICSEARCH_HOSTS: "https://elasticsearch:9200"
+      FLEET_ENROLL_INSECURE: 1
+      ENROLL_FORCE: 1
+      PREFLIGHT_CHECK: 1
+    secrets:
+      - source: ca.crt
+        target: /ca.crt
+    ports:
+      - "22:22" 
     networks:
       - elk
     depends_on: 

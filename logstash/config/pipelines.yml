@@ -1,0 +1,6 @@
+- pipeline.id: normal-beats
+  path.config: "/usr/share/logstash/pipeline/logstash.conf"
+  pipeline.workers: 3
+- pipeline.id: metribeats-beats
+  path.config: "/usr/share/logstash/pipeline/metricbeat.conf"
+  queue.type: persisted

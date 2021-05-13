@@ -10,14 +10,15 @@ This docker-compose project will assist with setting up and creating a ELK stack
 
 This project was built so that you can test and use built-in features under Elastic Security, like detections, signals, cases, and other features.
 
-This docker-compose project will create the following Elastic containers based on version 7.9.2:
+This docker-compose project will create the following Elastic containers based on version 7.12.0:
 
 * Elasticsearch
 * Logstash
 * Kibana
 * Packetbeat
 * Filebeat
-
+* Elastic Agent (Ubuntu 20.04)
+* Metricbeat
 
 ## Setup
 
@@ -26,7 +27,7 @@ In order to use this project, you must first include the following in a file nam
 > Copy or create your own `.env` from the provided example or from the code block below
 
 ```text
-ELK_VERSION=7.9.2
+ELK_VERSION=7.12.0
 ELASTIC_USERNAME="elastic"
 ELASTIC_PASSWORD="some_password"
 
@@ -35,6 +36,7 @@ ELASTICSEARCH_HEAP="2g"
 LOGSTASH_HEAP="1g"
 PACKETBEAT_HEAP="256m"
 FILEBEAT_HEAP="256m"
+METRICBEAT_HEAP="256m"
 XPACK_ENCRYPTION_KEY="somesuperlongstringlikethisoneMQBbtsynu4bV2uxLy"
 
 # Self signed TLS certificates
@@ -45,6 +47,7 @@ LOGSTASH_DIR=/usr/share/logstash
 KIBANA_DIR=/usr/share/kibana
 PACKETBEAT_DIR=/usr/share/packetbeat
 FILEBEAT_DIR=/usr/share/filebeat
+METRICBEAT_DIR=/usr/share/metricbeat
 
 # Letsencrypt certificates
 ## Setting STAGING to true means it will generate self-signed certificates
@@ -53,11 +56,11 @@ FILEBEAT_DIR=/usr/share/filebeat
 STAGING=true
 
 # swag Configuration
-DOMAIN=company.us
-SUBDOMAIN=kibana
+#DOMAIN=mydomain.com
+#SUBDOMAIN=kibana
 #SUBFOLDER=kibana
-EMAIL=email@company.us
-TIMEZONE=America/Chicago
+#EMAIL=email@email.com
+#TIMEZONE=America/Chicago
 ```
 
 > Note: You may need to change the size of the HEAP variables in the above configuration file based on your system requirements.  The settings present are for a machine with 8GB of memory
@@ -108,6 +111,9 @@ You can find additioanl information about the environments that are created on y
 ## Common Issues
 
 Please see our WiKi documentation for the most [Common Issues](https://github.com/swimlane/elk-tls-docker/wiki/Common-Issues) I have seen through testing and usage of this project.
+
+To remove all images from your system run: ```docker rmi $(docker images -a -q)```
+To remove all volumes from your system run: ```docker volume prune```
 
 ## Enabling features
 

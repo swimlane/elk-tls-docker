@@ -1,18 +1,35 @@
 ---
 server.name: kibana
 server.host: 0.0.0.0
+
+# Elasticsearch settings
 elasticsearch.hosts: [ "https://elasticsearch:9200" ]
-monitoring.ui.container.elasticsearch.enabled: true
-
-
-# X-Pack Security
-
+elasticsearch.ssl.certificateAuthorities: [ "${CONFIG_DIR}/ca.crt" ]
 elasticsearch.username: "${ELASTIC_USERNAME}"
 elasticsearch.password: "${ELASTIC_PASSWORD}"
+
+# Elasticsearch monitoring settings
+monitoring.ui.container.elasticsearch.enabled: true
+
+# X-Pack Security
+xpack.security.enabled: true
 xpack.encryptedSavedObjects.encryptionKey: "${ENCRYPTION_KEY}"
+xpack.security.encryptionKey: "${ENCRYPTION_KEY}"
+xpack.reporting.encryptionKey: "${ENCRYPTION_KEY}"
+
+# SSL settings
 
 server.ssl.enabled: true
-server.ssl.certificate: ${CONFIG_DIR}/kibana.crt
-server.ssl.key: ${CONFIG_DIR}/kibana.key
+server.ssl.certificate: "${CONFIG_DIR}/kibana.crt"
+server.ssl.key: "${CONFIG_DIR}/kibana.key"
+server.ssl.certificateAuthorities: [ "${CONFIG_DIR}/ca.crt" ]
 
-elasticsearch.ssl.certificateAuthorities: [ "${CONFIG_DIR}/ca.crt" ]
+# fleet settings for Elastic-agent
+xpack.fleet.enabled: true
+xpack.fleet.agents.enabled: true
+xpack.fleet.agents.tlsCheckDisabled: true
+xpack.fleet.agents.kibana.host: "https://kibana:5601"
+xpack.fleet.agents.elasticsearch.host: "https://elasticsearch:9200"
+
+xpack.ingestManager.enabled: true
+xpack.ingestManager.fleet.enabled: true
