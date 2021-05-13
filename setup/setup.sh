@@ -5,16 +5,53 @@ CONFIG_DIR=/usr/share/elasticsearch/config
 OUTPUT_FILE=/secrets/elasticsearch.keystore
 NATIVE_FILE=$CONFIG_DIR/elasticsearch.keystore
 OUTPUT_DIR=/secrets
-CA_ZIP=$OUTPUT_DIR/ca.zip
-CA_CERT=$OUTPUT_DIR/ca/ca.crt
-CA_KEY=$OUTPUT_DIR/ca/ca.key
+CA_DIR=$OUTPUT_DIR/certificate_authority
+KEYSTORES_DIR=$OUTPUT_DIR/keystores
+CERT_DIR=$OUTPUT_DIR/certificates
+CA_P12=$CA_DIR/elastic-stack-ca.p12
+CA_ZIP=$CA_DIR/ca.zip
+CA_CERT=$CA_DIR/ca/ca.crt
+CA_KEY=$CA_DIR/ca/ca.key
 BUNDLE_ZIP=$OUTPUT_DIR/bundle.zip
+CERT_KEYSTORES_ZIP=$OUTPUT_DIR/cert_keystores.zip
+HTTP_ZIP=$OUTPUT_DIR/http.zip
 
 yum install unzip openssl -y
 
+create_self_signed_ca()
+{
+    printf "====== Creating Self-Signed Certificate Authority ======\n"
+    printf "=====================================================\n"
+    echo "Generating Self-Signed Certificate Authority PEM ..."
+    bin/elasticsearch-certutil ca --pass "" --pem --out $CA_ZIP --silent
+    unzip $CA_ZIP -d $CA_DIR
+    echo "Generating Self-Signed Certificate Authority P12 ..."
+    bin/elasticsearch-certutil ca --pass "" --out $CA_P12 --silent
+    echo "elastic-stack-ca.p12 is located $CA_P12"
+}
+
+create_certificates()
+{
+    printf "====== Generating Certiticate Keystores ======\n"
+    printf "=====================================================\n"
+    echo "Creating p12 certificate keystores"
+    bin/elasticsearch-certutil cert --silent --in $CONFIG_DIR/instances.yml --out $CERT_KEYSTORES_ZIP --ca $CA_P12 --ca-pass "" --pass ""
+    unzip $CERT_KEYSTORES_ZIP -d $KEYSTORES_DIR
+    echo "Creating crt and key certificates"
+    bin/elasticsearch-certutil cert --silent --in $CONFIG_DIR/instances.yml --out $BUNDLE_ZIP --ca-cert $CA_CERT --ca-key $CA_KEY --ca-pass "" --pem
+    unzip $BUNDLE_ZIP -d $CERT_DIR
+}
+
+setup_passwords()
+{
+    printf "====== Setting up Default User Passwords ======\n"
+    printf "=====================================================\n"
+    
+    bin/elasticsearch-setup-passwords auto -u "https://0.0.0.0:9200" -v --batch
+}
+
 create_keystore()
 {
-    # Create Keystore
     printf "========== Creating Elasticsearch Keystore ==========\n"
     printf "=====================================================\n"
     elasticsearch-keystore create >> /dev/null
@@ -29,6 +66,7 @@ create_keystore()
         rm $OUTPUT_FILE
     fi
 
+    #setup_passwords
     echo "Saving new elasticsearch.keystore"
     mv $NATIVE_FILE $OUTPUT_FILE
     chmod 0644 $OUTPUT_FILE
@@ -37,56 +75,33 @@ create_keystore()
     printf "=====================================================\n"
 }
 
+
 remove_existing_certificates()
 {
-    printf "====== Generating Elasticsearch Certificates ======\n"
+    printf "====== Removing Existing Secrets ======\n"
     printf "=====================================================\n"
-    if [ -f "$CA_ZIP" ]; then
-        echo "Removing current Certificate Authority (CA)..."
-        rm $CA_ZIP
-    fi
-
-    if [ -f "$CA_CERT" ]; then
-        echo "Removing current Certificate Authority (CA) certificate..."
-        rm $CA_CERT
-    fi
-
-    if [ -f "$CA_KEY" ]; then
-        echo "Removing current Certificate Authority (CA) key..."
-        rm $CA_KEY
-    fi
-
-    if [ -f "$BUNDLE_ZIP" ]; then
-        echo "Removing bundle.zip (e.g. tls certificates)..."
-        rm $BUNDLE_ZIP
-    fi
-
-    if [ -d "$OUTPUT_DIR/elasticsearch" ]; then
-        echo "Removing elasticsearch certificates folder...."
-        rm -rf "$OUTPUT_DIR/elasticsearch"
-    fi
-
-    if [ -d "$OUTPUT_DIR/kibana" ]; then
-        echo "Removing kibana certificates folder...."
-        rm -rf "$OUTPUT_DIR/kibana"
-    fi
-
-    if [ -d "$OUTPUT_DIR/logstash" ]; then
-        echo "Removing logstash certificates folder...."
-        rm -rf "$OUTPUT_DIR/logstash"
-    fi
-
-    if [ -d "$OUTPUT_DIR/filebeat" ]; then
-        echo "Removing filebeat certificates folder...."
-        rm -rf "$OUTPUT_DIR/filebeat"
-    fi
+    for f in $OUTPUT_DIR/* ; do
+        if [ -d "$f" ]; then
+            echo "Removing directory $f"
+            rm -rf $f
+        fi
+        if [ -f "$f" ]; then
+            echo "Removing file $f"
+            rm $f
+        fi
+    done
 }
 
-create_self_signed_ca()
+create_directory_structure()
 {
-    echo "Generating Self-Signed Certificate Authority"
-    bin/elasticsearch-certutil ca -s --pass "" --pem --out $CA_ZIP
-    unzip $CA_ZIP -d $OUTPUT_DIR
+    printf "====== Creating Required Directories ======\n"
+    printf "=====================================================\n"
+    echo "Creating Certificate Authority Directory..."
+    mkdir $CA_DIR
+    echo "Creating Keystores Directory..."
+    mkdir $KEYSTORES_DIR
+    echo "Creating Certificates Directory..."
+    mkdir $CERT_DIR
 }
 
 rename_swag_confs()
@@ -103,9 +118,13 @@ rename_swag_confs()
     fi
 }
 
-create_keystore
 remove_existing_certificates
+create_directory_structure
+create_keystore
 create_self_signed_ca
+create_certificates
+
+openssl pkcs8 -in /secrets/certificates/logstash/logstash.key -topk8 -nocrypt -out /secrets/certificates/logstash/logstash.pkcs8.key
 
 if [ "$STAGING" = false ]; then
     rename_swag_confs
@@ -120,12 +139,13 @@ if [ "$STAGING" = false ]; then
     fi
 fi
 
-echo "Generating a certificate and private keys"
-bin/elasticsearch-certutil cert -s --ca-cert $CA_CERT --ca-key $CA_KEY --ca-pass "" --pem --in $CONFIG_DIR/instances.yml --out $BUNDLE_ZIP
-unzip $BUNDLE_ZIP -d $OUTPUT_DIR
+#setup_passwords
+#bin/elasticsearch-certutil http
+#unzip "/usr/share/elasticsearch/elasticsearch-ssl-http.zip" -d $OUTPUT_DIR/ssl
 
-echo "Convert logstash.key to PKCS#8 format for Beats input plugin"
-openssl pkcs8 -in $OUTPUT_DIR/logstash/logstash.key -topk8 -nocrypt -out $OUTPUT_DIR/logstash/logstash.pkcs8.key
+
+#echo "Convert logstash.key to PKCS#8 format for Beats input plugin"
+#openssl pkcs8 -in $OUTPUT_DIR/logstash/logstash.key -topk8 -nocrypt -out $OUTPUT_DIR/logstash/logstash.pkcs8.key
 
 chown -R 1000:0 $OUTPUT_DIR
 
