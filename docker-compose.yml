@@ -186,6 +186,39 @@ services:
     depends_on: 
       - logstash
 
+  metricbeat:
+    container_name: metricbeat
+    hostname: metricbeat
+    user: root
+    build:
+      context: metricbeat/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    restart: unless-stopped
+    cap_add: 
+      - NET_ADMIN
+      - NET_RAW
+    command:
+      - /bin/bash
+      - -c
+      - while true; do metricbeat -e; sleep 1; done
+    volumes:
+      - ./metricbeat/config/metricbeat.yml:${METRICBEAT_DIR}/metricbeat.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      CONFIG_DIR: ${METRICBEAT_DIR}/config
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      LS_JAVA_OPTS: "-Xmx${METRICBEAT_HEAP} -Xms${METRICBEAT_HEAP}"
+    secrets:
+      - source: elastic-stack-ca.p12
+        target: /etc/pki/ca-trust/source/anchors/elastic-stack-ca.p12
+      - source: ca.crt
+        target: /etc/pki/ca-trust/source/anchors/ca.crt
+      - source: metricbeat.cert
+        target: ${METRICBEAT_DIR}/config/metricbeat.crt
+      - source: metricbeat.key
+        target: ${METRICBEAT_DIR}/config/metricbeat.key
     networks:
       - elk
     depends_on: 
