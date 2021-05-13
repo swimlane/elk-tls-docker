@@ -1,30 +1,43 @@
 instances:
-    - name: elasticsearch
-      dns:
-        - elasticsearch.fqdn.tld
-        - localhost
-        - elasticsearch
-        - 0.0.0.0
-      ip:
-        - 0.0.0.0
-    - name: kibana
-      dns:
-        - kibana
-        - localhost
-        - 0.0.0.0
-      ip:
-        - 0.0.0.0
-    - name: logstash
-      dns:
-        - logstash
-        - localhost
-        - 0.0.0.0
-      ip:
-        - 0.0.0.0
-    - name: filebeat
-      dns:
-        - filebeat
-        - localhost
-        - 0.0.0.0
-      ip:
-        - 0.0.0.0
+  - name: elasticsearch
+    dns:
+      - elasticsearch
+      - localhost
+    ip:
+      - "0.0.0.0"
+      - "127.0.0.1"
+  - name: kibana
+    dns:
+      - kibana
+      - localhost
+    ip:
+      - "0.0.0.0"
+      - "127.0.0.1"
+  - name: logstash
+    dns:
+      - logstash
+      - localhost
+    ip:
+      - "0.0.0.0"
+      - "127.0.0.1"
+  - name: filebeat
+    dns:
+      - filebeat
+      - localhost
+    ip:
+      - "0.0.0.0"
+      - "127.0.0.1"
+  - name: metricbeat
+    dns:
+      - metricbeat
+      - localhost
+    ip:
+      - "0.0.0.0"
+      - "127.0.0.1"
+  - name: packetbeat
+    dns:
+      - packetbeat
+      - localhost
+    ip:
+      - "0.0.0.0"
+      - "127.0.0.1"
