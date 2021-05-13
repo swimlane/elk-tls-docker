@@ -175,8 +175,17 @@ services:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       LS_JAVA_OPTS: "-Xmx${PACKETBEAT_HEAP} -Xms${PACKETBEAT_HEAP}"
     secrets:
-      - source: ca.crt
-        target: ${PACKETBEAT_DIR}/config/ca.crt
+    - source: ca.crt
+      target: /etc/pki/ca-trust/source/anchors/ca.crt
+    - source: packetbeat.cert
+      target: ${PACKETBEAT_DIR}/config/packetbeat.crt
+    - source: packetbeat.key
+      target: ${PACKETBEAT_DIR}/config/packetbeat.key
+    networks:
+      - elk
+    depends_on: 
+      - logstash
+
     networks:
       - elk
     depends_on: 
