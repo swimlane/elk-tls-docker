@@ -232,12 +232,15 @@ services:
       args:
         ELK_VERSION: $ELK_VERSION
     restart: unless-stopped
-    command: filebeat -e -strict.perms=false
-    volumes:
+    command: >
+      sh -c "filebeat -e"
+    volumes: 
       - ./filebeat/config/filebeat.yml:${FILEBEAT_DIR}/filebeat.yml:ro
     environment:
       CONFIG_DIR: ${FILEBEAT_DIR}/config
       LS_JAVA_OPTS: "-Xmx${FILEBEAT_HEAP} -Xms${FILEBEAT_HEAP}"
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
     secrets:
       - source: ca.crt
         target: ${FILEBEAT_DIR}/config/ca.crt
