@@ -255,6 +255,34 @@ services:
     depends_on: 
       - logstash
 
+  elastic-agent:
+    container_name: elastic-agent
+    hostname: elastic-agent
+    build:
+      context: elastic-agent/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    restart: unless-stopped
+    environment:
+      FLEET_CA: '/ca.crt'
+      ELK_VERSION: ${ELK_VERSION}
+      KIBANA_HOST: "https://kibana:5601"
+      ELASTICSEARCH_USERNAME: ${ELASTIC_USERNAME}
+      ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD}
+      ELASTICSEARCH_HOSTS: "https://elasticsearch:9200"
+      FLEET_ENROLL_INSECURE: 1
+      ENROLL_FORCE: 1
+      PREFLIGHT_CHECK: 1
+    secrets:
+      - source: ca.crt
+        target: /ca.crt
+    ports:
+      - "22:22" 
+    networks:
+      - elk
+    depends_on: 
+      - logstash
+
 networks:
   elk:
     driver: bridge
