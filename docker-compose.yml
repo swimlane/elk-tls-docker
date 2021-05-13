@@ -5,30 +5,40 @@ volumes:
   data:
 
 secrets:
+  ca.crt:
+    file: ./secrets/certificate_authority/ca/ca.crt
   elasticsearch.keystore:
     file: ./secrets/elasticsearch.keystore
-  ca.crt:
-    file: ./secrets/ca/ca.crt
-  ca.key:
-    file: ./secrets/ca/ca.key
+  elastic-stack-ca.p12:
+    file: ./secrets/certificate_authority/elastic-stack-ca.p12
   elasticsearch.key:
-    file: ./secrets/elasticsearch/elasticsearch.key
+    file: ./secrets/certificates/elasticsearch/elasticsearch.key
   elasticsearch.cert:
-    file: ./secrets/elasticsearch/elasticsearch.crt
-  logstash.key:
-    file: ./secrets/logstash/logstash.key
-  logstash.pkcs8:
-    file: ./secrets/logstash/logstash.pkcs8.key
-  logstash.cert:
-    file: ./secrets/logstash/logstash.crt
+    file: ./secrets/certificates/elasticsearch/elasticsearch.crt
   kibana.key:
-    file: ./secrets/kibana/kibana.key
+    file: ./secrets/certificates/kibana/kibana.key
   kibana.cert:
-    file: ./secrets/kibana/kibana.crt
+    file: ./secrets/certificates/kibana/kibana.crt
+  logstash.pkcs8.key:
+    file: ./secrets/certificates/logstash/logstash.pkcs8.key
+  logstash.key:
+    file: ./secrets/certificates/logstash/logstash.key
+  logstash.p12:
+    file: ./secrets/keystores/logstash/logstash.p12
+  logstash.cert:
+    file: ./secrets/certificates/logstash/logstash.crt
   filebeat.key:
-    file: ./secrets/filebeat/filebeat.key
+    file: ./secrets/certificates/filebeat/filebeat.key
   filebeat.cert:
-    file: ./secrets/filebeat/filebeat.crt
+    file: ./secrets/certificates/filebeat/filebeat.crt
+  metricbeat.key:
+    file: ./secrets/certificates/metricbeat/metricbeat.key
+  metricbeat.cert:
+    file: ./secrets/certificates/metricbeat/metricbeat.crt
+  packetbeat.key:
+    file: ./secrets/certificates/packetbeat/packetbeat.key
+  packetbeat.cert:
+    file: ./secrets/certificates/packetbeat/packetbeat.crt
 
 services:
   elasticsearch:
