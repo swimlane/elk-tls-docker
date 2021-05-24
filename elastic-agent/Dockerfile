@@ -8,7 +8,7 @@ RUN apt-get update && \
 
 RUN pip3 install requests
 RUN pip3 install PyYaml
-RUN pip3 install elastic-agent-setup==0.0.10
+RUN pip3 install elastic-agent-setup==0.0.11
 
 ADD install.py /install.py
 RUN chmod +x /install.py
