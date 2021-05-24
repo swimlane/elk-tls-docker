@@ -3,6 +3,7 @@ ARG ELK_VERSION
 FROM docker.elastic.co/beats/packetbeat:${ELK_VERSION}
 
 USER root
+RUN yum-config-manager --save --setopt=base.skip_if_unavailable=true
 RUN yum install ca-certificates
 RUN update-ca-trust force-enable
 
