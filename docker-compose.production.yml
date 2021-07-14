@@ -5,30 +5,40 @@ volumes:
   data:
 
 secrets:
+  ca.crt:
+    file: ./secrets/certificate_authority/ca/ca.crt
   elasticsearch.keystore:
     file: ./secrets/elasticsearch.keystore
-  ca.crt:
-    file: ./secrets/ca/ca.crt
-  ca.key:
-    file: ./secrets/ca/ca.key
+  elastic-stack-ca.p12:
+    file: ./secrets/certificate_authority/elastic-stack-ca.p12
   elasticsearch.key:
-    file: ./secrets/elasticsearch/elasticsearch.key
+    file: ./secrets/certificates/elasticsearch/elasticsearch.key
   elasticsearch.cert:
-    file: ./secrets/elasticsearch/elasticsearch.crt
-  logstash.key:
-    file: ./secrets/logstash/logstash.key
-  logstash.pkcs8:
-    file: ./secrets/logstash/logstash.pkcs8.key
-  logstash.cert:
-    file: ./secrets/logstash/logstash.crt
+    file: ./secrets/certificates/elasticsearch/elasticsearch.crt
   kibana.key:
-    file: ./secrets/kibana/kibana.key
+    file: ./secrets/certificates/kibana/kibana.key
   kibana.cert:
-    file: ./secrets/kibana/kibana.crt
+    file: ./secrets/certificates/kibana/kibana.crt
+  logstash.pkcs8.key:
+    file: ./secrets/certificates/logstash/logstash.pkcs8.key
+  logstash.key:
+    file: ./secrets/certificates/logstash/logstash.key
+  logstash.p12:
+    file: ./secrets/keystores/logstash/logstash.p12
+  logstash.cert:
+    file: ./secrets/certificates/logstash/logstash.crt
   filebeat.key:
-    file: ./secrets/filebeat/filebeat.key
+    file: ./secrets/certificates/filebeat/filebeat.key
   filebeat.cert:
-    file: ./secrets/filebeat/filebeat.crt
+    file: ./secrets/certificates/filebeat/filebeat.crt
+  metricbeat.key:
+    file: ./secrets/certificates/metricbeat/metricbeat.key
+  metricbeat.cert:
+    file: ./secrets/certificates/metricbeat/metricbeat.crt
+  packetbeat.key:
+    file: ./secrets/certificates/packetbeat/packetbeat.key
+  packetbeat.cert:
+    file: ./secrets/certificates/packetbeat/packetbeat.crt
 
 services:
   swag:
@@ -136,7 +146,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./logstash/config/logstash.yml:${LOGSTASH_DIR}/config/logstash.yml:ro
-      - ./logstash/pipeline/logstash.conf:${LOGSTASH_DIR}/config/logstash.conf:ro
+      - ./logstash/pipeline/logstash.conf:${LOGSTASH_DIR}/pipeline/logstash.conf:ro
+      - ./logstash/pipeline/metricbeat.conf:${LOGSTASH_DIR}/pipeline/metricbeat.conf
     environment:
       CONFIG_DIR: ${LOGSTASH_DIR}/config
       ELASTIC_USERNAME: ${ELASTIC_USERNAME}
@@ -151,6 +162,8 @@ services:
         target: ${LOGSTASH_DIR}/config/logstash.key
       - source: logstash.pkcs8
         target: ${LOGSTASH_DIR}/config/logstash.pkcs8.key
+      - source: logstash.p12
+        target: ${LOGSTASH_DIR}/config/logstash.p12
     networks:
       - elk
     expose:
@@ -161,6 +174,7 @@ services:
      - 5000/udp
     depends_on: 
       - elasticsearch
+      - kibana
   
   packetbeat:
     container_name: packetbeat
@@ -186,6 +200,48 @@ services:
     secrets:
       - source: ca.crt
         target: ${PACKETBEAT_DIR}/config/ca.crt
+      - source: packetbeat.cert
+        target: ${PACKETBEAT_DIR}/config/packetbeat.crt
+      - source: packetbeat.key
+        target: ${PACKETBEAT_DIR}/config/packetbeat.key
+    networks:
+      - elk
+    depends_on: 
+      - logstash
+  
+  metricbeat:
+    container_name: metricbeat
+    hostname: metricbeat
+    user: root
+    build:
+      context: metricbeat/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    restart: unless-stopped
+    cap_add: 
+      - NET_ADMIN
+      - NET_RAW
+    command:
+      - /bin/bash
+      - -c
+      - while true; do metricbeat -e; sleep 1; done
+    volumes:
+      - ./metricbeat/config/metricbeat.yml:${METRICBEAT_DIR}/metricbeat.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      CONFIG_DIR: ${METRICBEAT_DIR}/config
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      LS_JAVA_OPTS: "-Xmx${METRICBEAT_HEAP} -Xms${METRICBEAT_HEAP}"
+    secrets:
+      - source: elastic-stack-ca.p12
+        target: /etc/pki/ca-trust/source/anchors/elastic-stack-ca.p12
+      - source: ca.crt
+        target: /etc/pki/ca-trust/source/anchors/ca.crt
+      - source: metricbeat.cert
+        target: ${METRICBEAT_DIR}/config/metricbeat.crt
+      - source: metricbeat.key
+        target: ${METRICBEAT_DIR}/config/metricbeat.key
     networks:
       - elk
     depends_on: 
