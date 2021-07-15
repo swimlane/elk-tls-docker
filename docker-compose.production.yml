@@ -160,7 +160,7 @@ services:
         target: ${LOGSTASH_DIR}/config/logstash.crt
       - source: logstash.key
         target: ${LOGSTASH_DIR}/config/logstash.key
-      - source: logstash.pkcs8
+      - source: logstash.pkcs8.key
         target: ${LOGSTASH_DIR}/config/logstash.pkcs8.key
       - source: logstash.p12
         target: ${LOGSTASH_DIR}/config/logstash.p12
