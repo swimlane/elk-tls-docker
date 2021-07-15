@@ -28,19 +28,19 @@ In order to use this project, you must first include the following in a file nam
 
 ```text
 ELK_VERSION=7.12.0
-ELASTIC_USERNAME="elastic"
-ELASTIC_PASSWORD="some_password"
+ELASTIC_USERNAME=elastic
+ELASTIC_PASSWORD=some_password
 
 # Configuration Variables
-ELASTICSEARCH_HEAP="2g"
-LOGSTASH_HEAP="1g"
-PACKETBEAT_HEAP="256m"
-FILEBEAT_HEAP="256m"
-METRICBEAT_HEAP="256m"
-XPACK_ENCRYPTION_KEY="somesuperlongstringlikethisoneMQBbtsynu4bV2uxLy"
+ELASTICSEARCH_HEAP=2g
+LOGSTASH_HEAP=1g
+PACKETBEAT_HEAP=256m
+FILEBEAT_HEAP=256m
+METRICBEAT_HEAP=256m
+XPACK_ENCRYPTION_KEY=somesuperlongstringlikethisoneMQBbtsynu4bV2uxLy
 
 # Self signed TLS certificates
-CA_PASSWORD="some password"
+CA_PASSWORD=some_password
 CA_DAYS=3650
 ELASTIC_DIR=/usr/share/elasticsearch
 LOGSTASH_DIR=/usr/share/logstash
