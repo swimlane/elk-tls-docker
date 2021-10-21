@@ -122,6 +122,7 @@ services:
       ELASTIC_USERNAME: ${ELASTIC_USERNAME}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       ENCRYPTION_KEY: ${XPACK_ENCRYPTION_KEY}
+      KIBANA_URL: ${KIBANA_URL}
     secrets:
       - source: ca.crt
         target: ${KIBANA_DIR}/config/ca.crt

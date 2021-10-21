@@ -27,7 +27,7 @@ In order to use this project, you must first include the following in a file nam
 > Copy or create your own `.env` from the provided example or from the code block below
 
 ```text
-ELK_VERSION=7.12.0
+ELK_VERSION=7.15.0
 ELASTIC_USERNAME=elastic
 ELASTIC_PASSWORD=some_password
 

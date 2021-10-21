@@ -1,6 +1,7 @@
 ---
 server.name: kibana
 server.host: 0.0.0.0
+server.publicBaseUrl: "${KIBANA_URL}"
 
 # Elasticsearch settings
 elasticsearch.hosts: [ "https://elasticsearch:9200" ]
