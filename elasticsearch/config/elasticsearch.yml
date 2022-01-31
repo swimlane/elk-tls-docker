@@ -8,7 +8,6 @@ xpack.license.self_generated.type: trial
 
 # Security
 xpack.security.enabled: true
-xpack.monitoring.collection.enabled: true
 xpack.security.authc.token.enabled: true
 xpack.security.authc.api_key.enabled: true
 

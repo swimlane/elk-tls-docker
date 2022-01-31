@@ -3,7 +3,7 @@ setup.dashboards.enabled: true
 # Forcing Elasticsearch index template 
 setup.template.overwrite: true
 
-setup.kibana.host: "https://kibana:5601"
+setup.kibana.host: "kibana:5601"
 setup.kibana.protocol: "https"
 setup.kibana.ssl.enabled: true
 setup.kibana.username: '${ELASTIC_USERNAME:}'
@@ -11,7 +11,7 @@ setup.kibana.password: '${ELASTIC_PASSWORD:}'
 setup.kibana.ssl.certificate_authorities: ["/etc/pki/ca-trust/source/anchors/ca.crt"]
 setup.kibana.ssl.certificate: ${CONFIG_DIR}/metricbeat.crt
 setup.kibana.ssl.key: ${CONFIG_DIR}/metricbeat.key
-setup.kibana.ssl.verification_mode: none
+setup.kibana.ssl.verification_mode: "none"
 
 metricbeat.autodiscover:
   providers:

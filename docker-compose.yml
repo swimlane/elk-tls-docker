@@ -71,6 +71,11 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
+    healthcheck:
+      test: curl -s https://elasticsearch:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
     ulimits:
       memlock:
         soft: -1
@@ -104,6 +109,11 @@ services:
         target: ${KIBANA_DIR}/config/kibana.crt
       - source: kibana.key
         target: ${KIBANA_DIR}/config/kibana.key
+    healthcheck:
+      test: curl -s https://kibana:5601 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
     ports:
       - "5601:5601"
     networks:
@@ -224,6 +234,7 @@ services:
       - elk
     depends_on: 
       - logstash
+      - kibana
 
   filebeat:
     container_name: filebeat
