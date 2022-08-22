@@ -149,3 +149,8 @@ See also the list of [contributors](https://github.com/swimlane/elk-tls-docker/c
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details
+
+
+### Infrastructure model
+
+![Infrastructure model](.infragenie/infrastructure_model.png)
